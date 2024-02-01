@@ -1,0 +1,264 @@
+#               INSTALAÇÃO E CARREGAMENTO DE PACOTES NECESSÁRIOS               #
+################################################################################
+
+#Pacotes utilizados
+
+pacotes <- c("quantmod","PerformanceAnalytics","magrittr","ggplot2",
+             "fPortfolio","timeSeries","dplyr","yfR","correlation","psych", 
+             "metan","readr","readxl","plotly","tidyverse","gridExtra","forecast","TTR",
+             "smooth", "tsibble", "fable","tsibbledata", "fpp3","lubridate",
+             "urca", "dygraphs", "quantmod","BETS","tseries","FinTS","feasts",
+             "gridExtra", "scales", "caret","xtable", "tsutils","GetBCBData", 
+             "quantmod","dgof","seasonal","devtools","transformr","gganimate","TTR",
+             "plotly","tidyverse","ggrepel","fastDummies","knitr","kableExtra",
+             "splines","reshape2","PerformanceAnalytics","correlation","see",
+             "ggraph","psych","nortest","rgl","car","ggside","tidyquant","olsrr",
+             "jtools","ggstance","magick","cowplot","emojifont","beepr","Rcpp",
+             "equatiomatic"
+)
+
+
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T) 
+} else {
+  sapply(pacotes, require, character = T) 
+}
+
+
+pacotes2 <- c("readxl","plotly","tidyverse","gridExtra","forecast","TTR",
+             "smooth","tidyverse", "tsibble", "fable","tsibbledata", "fpp3",
+             "urca","ggplot2", "see","ggraph")
+
+library(plotly)
+
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T)
+} else {
+  sapply(pacotes, require, character = T)
+}
+
+library(see)
+library(ggraph)
+
+pesquisa %>%
+  correlation(method = "pearson") %>%
+  plot()
+
+analises_Ret = function(acao){
+  acao <- getSymbols(ativos,
+                   from = "2022-01-01",
+                   to   = "2022-12-31",
+                   auto.assign = TRUE)
+    acao_rets <- acao %>%
+    Cl() %>%
+    log() %>%
+    diff()
+    return(acao_rets)    
+}
+
+carteira<-data.frame(read.csv("C:\\Users\\Usuario\\Desktop\\Script-R-TCC\\Carteiras\\Carteira-Varejo.csv"))
+ativos <- c(carteira$Ativo)
+
+Ret <-data.frame(analises_Ret(ativos[5]))
+
+acao <- getSymbols(ativos[5],
+                     from = "2022-01-01",
+                     to   = "2022-12-31",
+                     auto.assign = FALSE)
+acao_rets <- acao %>%
+    Cl() %>%
+    log() %>%
+    diff()
+acao_monthly <- acao %>%
+    Ad() %>%
+    to.period()
+acao_monthly_rets <- acao_monthly %>%
+    Cl() %>%
+    log() %>%
+    diff()
+
+# Análise do conceito DrawDown
+chart.Drawdown(acao_monthly_rets["2022"])
+
+
+# Análise do conceito Short-Fall Risk
+100 * sum(acao_monthly_rets < -0.05,
+          na.rm = TRUE) / length(acao_monthly_rets)
+
+summary(coredata(acao_rets))
+#Para os retornos diários temos uma probabilidade de 0,16% de termos retornos menores que 5%.
+100 * sum(acao_monthly_rets < -0.05,
+          na.rm = TRUE) / length(acao_monthly_rets)
+
+#Análise em Janela Móvel
+# Calculo do desvio padrão e a média da amosta do indice, baseado nos retornos
+
+c(
+  mean = acao_rets %>% na.omit %>% mean(),
+  sd = acao_rets %>% na.omit %>% sd()
+)
+
+# Observar o comportamento do indice pesquisado, da média num periodo de 21 dias
+
+rollmean(acao_rets, 300) %>%
+  autoplot() +
+  geom_hline(yintercept = acao_rets %>% na.omit %>% mean(), colour = 'red')
+
+# Observar o comportamento do indice, do desvio padrão num periodo de 21 dias
+
+rollapply(acao_rets, 21, sd) %>%
+  autoplot() +
+  geom_hline(yintercept = acao_rets %>% na.omit %>% sd(), colour = 'red')
+
+
+# graficos de desempenho de ações no ano de 2022
+getSymbols(ativos[1], src = "yahoo", from = first_date, to = last_date)
+getSymbols(ativos[2], src = "yahoo", from = first_date, to = last_date)
+getSymbols(ativos[3], src = "yahoo", from = first_date, to = last_date)
+getSymbols(ativos[4], src = "yahoo", from = first_date, to = last_date)
+getSymbols(ativos[5], src = "yahoo", from = first_date, to = last_date)
+getSymbols(ativos[6], src = "yahoo", from = first_date, to = last_date)
+
+# Histogramas
+ALPA4_Ret <-data.frame(retorno(ALPA4.SA))
+ALPA4_Ret %>%
+  chart.Histogram(breaks = 50,
+                  main = "Histograma de retornos do índice ->  ALPA4.SA",
+                  show.outliers = TRUE,
+                  methods = "add.normal", lwd = 1)
+
+MGLU3_Ret <-data.frame(retorno(MGLU3.SA))
+
+MGLU3_Ret %>%
+  chart.Histogram(breaks = 50,
+                  main = "Histograma de retornos do índice ->  MGLU3.SA",
+                  show.outliers = TRUE,
+                  methods = "add.normal", lwd = 1)
+
+AMER3_Ret <-data.frame(retorno(AMER3))
+AMER3_Ret %>%
+  chart.Histogram(breaks = 50,
+                  main = "Histograma de retornos do índice ->  AMER3.SA",
+                  show.outliers = TRUE,
+                  methods = "add.normal", lwd = 1)
+
+CEAB3_Ret <-data.frame(retorno(CEAB3))
+CEAB3_Ret %>%
+  chart.Histogram(breaks = 50,
+                  main = "Histograma de retornos do índice ->  CEAB3.SA",
+                  show.outliers = TRUE,
+                  methods = "add.normal", lwd = 1)
+
+LREN3_Ret <-data.frame(retorno(LREN3.SA))
+LREN3_Ret %>%
+  chart.Histogram(breaks = 50,
+                  main = "Histograma de retornos do índice ->  LREN3.SA",
+                  show.outliers = TRUE,
+                  methods = "add.normal", lwd = 1)
+
+AMAR_Ret <-data.frame(retorno(AMAR3.SA))
+AMAR_Ret %>%
+  chart.Histogram(breaks = 50,
+                  main = "Histograma de retornos do índice ->  AMAR.SA",
+                  show.outliers = TRUE,
+                  methods = "add.normal", lwd = 1)
+
+
+ALPA4 <- na.omit(ALPA4.SA)
+
+ALPA4_rets <- ALPA4.SA %>%
+  Cl() %>%
+  log() %>%
+  diff()
+ALPA4_rets %>%
+  autoplot()
+
+chartSeries(ALPA4)
+
+MGLU3 <- na.omit(MGLU3.SA)
+
+MGLU3_rets <- MGLU3.SA %>%
+  Cl() %>%
+  log() %>%
+  diff()
+MGLU3_rets %>%
+  autoplot()
+
+chartSeries(MGLU3)
+
+AMER3 <- na.omit(AMER3.SA)
+
+AMER3_rets <- AMER3.SA %>%
+  Cl() %>%
+  log() %>%
+  diff()
+AMER3_rets %>%
+  autoplot()
+
+chartSeries(AMER3)
+
+CEAB3 <- na.omit(CEAB3.SA)
+CEAB3_rets <- CEAB3.SA %>%
+  Cl() %>%
+  log() %>%
+  diff()
+CEAB3_rets %>%
+  autoplot()
+
+chartSeries(CEAB3)
+
+LREN3 <- na.omit(LREN3.SA)
+LREN3_rets <- LREN3.SA %>%
+  Cl() %>%
+  log() %>%
+  diff()
+LREN3_rets %>%
+  autoplot()
+chartSeries(LREN3)
+#
+chartSeries(LREN3)
+chart.Drawdown(LREN3_rets["2022"])
+
+AMAR3 <- na.omit(LREN3.SA)
+AMAR_rets <- AMAR3.SA %>%
+  Cl() %>%
+  log() %>%
+  diff()
+AMAR3_rets %>%
+  autoplot()
+chartSeries(AMAR3)
+#
+chartSeries(AMAR3)
+chart.Drawdown(AMAR3_rets["2022"])
+
+rollmean(AMAR_rets, 21) %>%
+  autoplot() +
+  geom_hline(yintercept = AMAR_rets %>% na.omit %>% mean(), colour = 'red')
+
+rollapply(AMAR_rets, 21, sd) %>%
+  autoplot() +
+  geom_hline(yintercept = AMAR_rets %>% na.omit %>% sd(), colour = 'red')
+
+
+# Comparando ativos
+
+symbols <- c(ativos[1], ativos[2], ativos[3], ativos[4], ativos[5], ativos[6])
+prices <- getSymbols(symbols, from = "2022-01-01",
+                     to = "2022-12-31",
+                     auto.assign = TRUE) %>%
+  map(~Ad(get(.))) %>%
+  reduce(merge) %>%
+  `colnames<-`(symbols)
+
+plot(prices, legend.loc = "topleft")
+
+
+
